@@ -4,9 +4,26 @@ from dotenv import load_dotenv
 # 加载环境变量
 load_dotenv()
 
-# Claude API 配置
-CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY", "")
-MODEL = "claude-sonnet-4-6"
+# API 配置
+API_TYPE = os.getenv("API_TYPE", "zhipu")  # "anthropic" 或 "zhipu"
+
+# 智谱 API 配置
+ZHIPU_API_KEY = os.getenv("ZHIPU_API_KEY", "")
+ZHIPU_BASE_URL = os.getenv("ZHIPU_BASE_URL", "https://open.bigmodel.cn/api/paas/v4/")
+ZHIPU_MODEL = os.getenv("ZHIPU_MODEL", "glm-4")
+
+# 根据 API_TYPE 选择配置
+if API_TYPE == "zhipu":
+    API_KEY = ZHIPU_API_KEY
+    BASE_URL = ZHIPU_BASE_URL
+    MODEL = ZHIPU_MODEL
+    USE_OPENAI_FORMAT = True  # 智谱使用 OpenAI 格式
+else:
+    # Anthropic API 配置（备用）
+    API_KEY = os.getenv("CLAUDE_API_KEY", "")
+    BASE_URL = os.getenv("BASE_URL", "https://api.anthropic.com")
+    MODEL = "claude-sonnet-4-6"
+    USE_OPENAI_FORMAT = False
 
 # 输出配置
 OUTPUT_DIR = "data/output"

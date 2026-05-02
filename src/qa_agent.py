@@ -21,7 +21,10 @@ class QAAgent:
         if not self.api_key:
             raise ValueError("请设置 CLAUDE_API_KEY 环境变量")
 
-        self.client = Anthropic(api_key=self.api_key)
+        self.client = Anthropic(
+            api_key=self.api_key,
+            base_url=config.BASE_URL
+        )
         self.model = config.MODEL
         self.context = None
 

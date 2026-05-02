@@ -1,9 +1,8 @@
 """
 翻译模块
-使用 Claude API 进行智能翻译
+支持 Anthropic 和智谱 API
 """
 
-from anthropic import Anthropic
 import config
 
 
@@ -15,14 +14,28 @@ class Translator:
         初始化翻译器
 
         Args:
-            api_key: Claude API Key，如果不提供则从配置文件读取
+            api_key: API Key，如果不提供则从配置文件读取
         """
-        self.api_key = api_key or config.CLAUDE_API_KEY
+        self.api_key = api_key or config.API_KEY
         if not self.api_key:
-            raise ValueError("请设置 CLAUDE_API_KEY 环境变量")
+            raise ValueError("请设置 API Key 环境变量")
 
-        self.client = Anthropic(api_key=self.api_key)
+        # 根据 API 类型初始化客户端
+        if config.USE_OPENAI_FORMAT:
+            from openai import OpenAI
+            self.client = OpenAI(
+                api_key=self.api_key,
+                base_url=config.BASE_URL
+            )
+        else:
+            from anthropic import Anthropic
+            self.client = Anthropic(
+                api_key=self.api_key,
+                base_url=config.BASE_URL
+            )
+
         self.model = config.MODEL
+        self.use_openai_format = config.USE_OPENAI_FORMAT
 
     def translate(self, text: str, chunk_size: int = 3000) -> str:
         """
@@ -54,15 +67,23 @@ class Translator:
         """翻译单个文本块"""
         prompt = config.TRANSLATION_PROMPT.format(text=text)
 
-        message = self.client.messages.create(
-            model=self.model,
-            max_tokens=4096,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
-
-        return message.content[0].text
+        if self.use_openai_format:
+            # 智谱 API（OpenAI 格式）
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=4096,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
+        else:
+            # Anthropic API
+            message = self.client.messages.create(
+                model=self.model,
+                max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return message.content[0].text
 
     def _split_text(self, text: str, chunk_size: int) -> list:
         """
