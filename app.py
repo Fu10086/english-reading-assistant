@@ -275,36 +275,36 @@ with col2:
 
                 elif mode == "问答模式":
                     # 初始化问答 Agent
-                    if st.session_state.qa_agent is None:
+                    if st.session_state.qa_agent is None or st.session_state.current_file_content != content:
                         st.session_state.qa_agent = QAAgent()
                         st.session_state.qa_agent.set_context(content)
+                        st.session_state.current_file_content = content
+                        st.session_state.chat_history = []  # 清空历史
 
                     st.success("✅ 问答模式已激活！")
-                    st.info("💡 在下方输入你的问题")
+
+                    # 使用文本输入框代替 chat_input（更明显）
+                    st.markdown("### 💬 提问区")
+                    question = st.text_input("输入你的问题：", key="question_input", placeholder="例如：这篇文章的核心观点是什么？")
+
+                    ask_button = st.button("🚀 提问", type="primary", use_container_width=True)
+
+                    if ask_button and question:
+                        with st.spinner("⏳ 正在思考..."):
+                            try:
+                                answer = st.session_state.qa_agent.ask(question)
+                                # 保存到历史
+                                st.session_state.chat_history.append((question, answer))
+                            except Exception as e:
+                                st.error(f"❌ 回答失败: {e}")
 
                     # 显示聊天历史
-                    for i, (q, a) in enumerate(st.session_state.chat_history):
-                        with st.chat_message("user"):
-                            st.write(q)
-                        with st.chat_message("assistant"):
-                            st.write(a)
-
-                    # 问题输入
-                    question = st.chat_input("输入你的问题...")
-
-                    if question:
-                        # 显示用户问题
-                        with st.chat_message("user"):
-                            st.write(question)
-
-                        # 获取回答
-                        with st.chat_message("assistant"):
-                            with st.spinner("思考中..."):
-                                answer = st.session_state.qa_agent.ask(question)
-                                st.write(answer)
-
-                        # 保存到历史
-                        st.session_state.chat_history.append((question, answer))
+                    if st.session_state.chat_history:
+                        st.markdown("### 📝 对话历史")
+                        for i, (q, a) in enumerate(st.session_state.chat_history):
+                            st.markdown(f"**问题 {i+1}:** {q}")
+                            st.info(a)
+                            st.markdown("---")
 
             except Exception as e:
                 st.error(f"❌ 处理失败: {str(e)}")
