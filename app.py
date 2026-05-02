@@ -120,14 +120,50 @@ with col1:
     if input_method == "上传文件":
         uploaded_file = st.file_uploader(
             "上传英文文件",
-            type=['txt', 'md'],
-            help="支持 .txt 和 .md 格式"
+            type=['txt', 'md', 'pdf'],
+            help="支持 .txt、.md 和 .pdf 格式"
         )
 
         if uploaded_file is not None:
-            content = uploaded_file.read().decode('utf-8')
-            st.success(f"✅ 文件已上传: {uploaded_file.name}")
-            st.info(f"📝 字符数: {len(content)}")
+            # 根据文件类型处理
+            if uploaded_file.name.endswith('.pdf'):
+                # PDF 文件处理
+                import tempfile
+                from src.pdf_reader import PDFReader
+
+                # 保存临时文件
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+                    tmp_file.write(uploaded_file.read())
+                    tmp_path = tmp_file.name
+
+                try:
+                    # 读取 PDF
+                    pdf_reader = PDFReader()
+
+                    # 显示 PDF 信息
+                    info = pdf_reader.get_pdf_info(tmp_path)
+                    st.success(f"✅ PDF 已上传: {uploaded_file.name}")
+                    st.info(f"📄 页数: {info.get('pages', 'N/A')} | 📝 字符数: {info.get('estimated_chars', 'N/A')}")
+
+                    # 提取文本
+                    with st.spinner("⏳ 正在解析 PDF..."):
+                        content = pdf_reader.read_pdf(tmp_path)
+
+                    st.success("✅ PDF 解析完成！")
+
+                except Exception as e:
+                    st.error(f"❌ PDF 解析失败: {e}")
+                    content = None
+                finally:
+                    # 删除临时文件
+                    import os
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+            else:
+                # 文本文件处理
+                content = uploaded_file.read().decode('utf-8')
+                st.success(f"✅ 文件已上传: {uploaded_file.name}")
+                st.info(f"📝 字符数: {len(content)}")
 
             # 预览
             with st.expander("📖 预览内容"):
