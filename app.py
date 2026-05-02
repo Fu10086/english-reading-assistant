@@ -231,18 +231,42 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-    /* 文件上传器优化 */
+    /* 文件上传器优化 - 大面积拖拽区域 */
     .stFileUploader {
-        border: 2px dashed #e5e7eb;
-        border-radius: 12px;
-        padding: 2rem;
+        border: 3px dashed #e5e7eb;
+        border-radius: 16px;
+        padding: 3rem 2rem;
         text-align: center;
         transition: all 0.3s ease;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        cursor: pointer;
+        position: relative;
     }
 
     .stFileUploader:hover {
         border-color: #667eea;
-        background: #f9fafb;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        transform: scale(1.02);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+    }
+
+    /* 拖拽提示文字 */
+    .stFileUploader section {
+        padding: 2rem;
+    }
+
+    .stFileUploader section > div {
+        font-size: 1.1rem;
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    /* 拖拽时的动画效果 */
+    .stFileUploader[data-drag-active="true"] {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+        transform: scale(1.05);
+        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.3);
     }
 
     /* 成功/错误/信息提示优化 */
@@ -379,10 +403,19 @@ with col_left:
     content = None
 
     with input_tab1:
+        # 添加拖拽提示
+        st.markdown("""
+        <div style='text-align: center; padding: 1rem 0; color: #667eea;'>
+            <h3 style='margin: 0; font-size: 1.5rem;'>📁 拖拽文件到这里</h3>
+            <p style='margin: 0.5rem 0; color: #6b7280;'>或点击选择文件</p>
+            <p style='margin: 0; font-size: 0.9rem; color: #9ca3af;'>支持 TXT、MD、PDF 格式</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         uploaded_file = st.file_uploader(
             "选择文件",
             type=['txt', 'md', 'pdf'],
-            help="支持 TXT、Markdown 和 PDF 格式",
+            help="拖拽文件到上方区域，或点击选择文件",
             label_visibility="collapsed"
         )
 
