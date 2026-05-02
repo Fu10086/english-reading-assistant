@@ -1,0 +1,52 @@
+Computer Systems: A Programmer's Perspective
+Chapter 2: Representing and Manipulating Information
+
+Modern computers store and process information represented as two-valued signals. These lowly binary digits, or bits, form the basis of the digital revolution. The familiar decimal, or base-10, representation has been in use for over 1000 years, having been developed in India, improved by Arab mathematicians in the 12th century, and brought to the West in the 13th century by the Italian mathematician Leonardo Pisano (known as Fibonacci).
+
+2.1 Information Storage
+
+Rather than accessing individual bits in memory, most computers use blocks of 8 bits, or bytes, as the smallest addressable unit of memory. A machine-level program views memory as a very large array of bytes, referred to as virtual memory. Every byte of memory is identified by a unique number, known as its address, and the set of all possible addresses is known as the virtual address space.
+
+2.1.1 Hexadecimal Notation
+
+A single byte consists of 8 bits. In binary notation, its value ranges from 00000000 to 11111111. When viewed as a decimal integer, its value ranges from 0 to 255. Neither notation is very convenient for describing bit patterns. Binary notation is too verbose, while with decimal notation it is tedious to convert to and from bit patterns. Instead, we write bit patterns as base-16, or hexadecimal numbers.
+
+Hexadecimal (or simply "hex") uses digits 0 through 9 along with characters A through F to represent 16 possible values. In C, numeric constants starting with 0x or 0X are interpreted as being in hexadecimal. The characters A through F may be written in either upper- or lowercase.
+
+2.1.2 Data Sizes
+
+Every computer has a word size, indicating the nominal size of pointer data. Since a virtual address is encoded by such a word, the most important system parameter determined by the word size is the maximum size of the virtual address space. That is, for a machine with a w-bit word size, the virtual addresses can range from 0 to 2^w − 1, giving the program access to at most 2^w bytes.
+
+Most 64-bit machines can also run programs compiled for use on 32-bit machines, a form of backward compatibility. So, for example, when a program prog.c is compiled with the directive linux> gcc -m32 prog.c, this program will run correctly on either a 32-bit or a 64-bit machine. When compiled with the directive linux> gcc -m64 prog.c, this creates a program that will only run on a 64-bit machine.
+
+2.2 Integer Representations
+
+We describe two different ways bits can be used to encode integers: one that can only represent nonneg- ative numbers, and one that can represent negative, zero, and positive numbers. We will see later that they are strongly related both in their mathematical properties and their machine-level implementations.
+
+2.2.1 Integral Data Types
+
+C supports a variety of integral data types—ones that represent finite ranges of integers. These are shown in Figures 2.9 and 2.10, along with the ranges of values they can represent using either 32- or 64-bit programs. Each type can specify a size with keyword char, short, int, and long, as well as an indication of whether the represented numbers are all nonneg- ative (declared as unsigned), or possibly negative (the default).
+
+2.2.2 Unsigned Encodings
+
+Let us consider an integer data type of w bits. We write a bit vector as either x, to denote the entire vector, or as [xw−1, xw−2, . . . , x0] to denote the individual bits within the vector. We treat x as a number written in binary notation, so that xw−1 is the most significant bit and x0 is the least. We assume this is an unsigned encoding.
+
+For vector x = [xw−1, xw−2, . . . , x0]:
+B2U_w(x) = sum of (x_i * 2^i) for i from 0 to w-1
+
+The unsigned binary representation has the important property that every number between 0 and 2^w − 1 has a unique encoding as a w-bit value.
+
+2.2.3 Two's-Complement Encodings
+
+For many applications, we wish to represent negative values as well. The most common computer representation of signed numbers is known as two's-complement form. This is defined by interpreting the most significant bit of the word to have negative weight.
+
+For vector x = [xw−1, xw−2, . . . , x0]:
+B2T_w(x) = -x_{w-1} * 2^{w-1} + sum of (x_i * 2^i) for i from 0 to w-2
+
+The most significant bit xw−1 is also called the sign bit. Its "weight" is −2^{w−1}, the negation of its weight in an unsigned representation. When the sign bit is set to 1, the represented value is negative, and when set to 0, the value is nonneg- ative.
+
+The two's-complement range for a w-bit number is:
+TMin_w = -2^{w-1}
+TMax_w = 2^{w-1} - 1
+
+For typical 32-bit programs: TMin = -2,147,483,648 and TMax = 2,147,483,647.
